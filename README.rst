@@ -1,3 +1,11 @@
+IA downloader using wget
+==================================================
+
+This repo contains a simple modification to the ia program, using wget to
+support resumable downloads.
+
+Original README.rst file follows:
+
 A Python and Command-Line Interface to Archive.org
 ==================================================
 

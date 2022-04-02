@@ -25,6 +25,7 @@ internetarchive.files
 :license: AGPL 3, see LICENSE for more details.
 """
 import os
+import subprocess
 import sys
 import logging
 import socket
@@ -235,42 +236,25 @@ class File(BaseFile):
             os.makedirs(parent_dir)
 
         try:
-            response = self.item.session.get(self.url,
-                                             stream=True,
-                                             timeout=12,
-                                             auth=self.auth,
-                                             params=params)
-            response.raise_for_status()
-            if return_responses:
-                return response
-
-            if verbose:
-                total = int(response.headers.get('content-length', 0)) or None
-                progress_bar = tqdm(desc=f' downloading {self.name}',
-                                    total=total,
-                                    unit='iB',
-                                    unit_scale=True,
-                                    unit_divisor=1024)
-            else:
-                progress_bar = nullcontext()
-
-            if not chunk_size:
-                chunk_size = 1048576
-            if not fileobj:
-                fileobj = open(file_path.encode('utf-8'), 'wb')
-
-            with fileobj, progress_bar as bar:
-                for chunk in response.iter_content(chunk_size=chunk_size):
-                    if chunk:
-                        size = fileobj.write(chunk)
-                        if bar is not None:
-                            bar.update(size)
+            args = [
+                "wget",
+                "--continue",
+                "--verbose",
+                "--show-progress",
+                "--progress=bar",
+                "-O",
+                file_path,
+            ]
+            if self.auth:
+                auth_str = f'LOW {self.auth.access_key}:{self.auth.secret_key}'
+                args.append("--header")
+                args.append(f"Authorization: {auth_str}")
+            args.append(self.url)
+            subprocess.check_call(args, stdout=None)
         except (RetryError, HTTPError, ConnectTimeout,
                 ConnectionError, socket.error, ReadTimeout) as exc:
             msg = f'error downloading file {file_path}, exception raised: {exc}'
             log.error(msg)
-            if os.path.exists(file_path):
-                os.remove(file_path)
             if verbose:
                 print(f' {msg}', file=sys.stderr)
             if ignore_errors:
