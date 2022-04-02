@@ -1,8 +1,9 @@
-IA downloader using wget
-==================================================
+Modified ia command-line tool using wget
+========================================
 
 This repo contains a simple modification to the ia program, using wget to
-support resumable downloads.
+support resumable downloads. Also, wget automatically retries downloads,
+making the download process of large archives more robust.
 
 Original README.rst file follows:
 

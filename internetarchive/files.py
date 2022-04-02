@@ -251,8 +251,7 @@ class File(BaseFile):
                 args.append(f"Authorization: {auth_str}")
             args.append(self.url)
             subprocess.check_call(args, stdout=None)
-        except (RetryError, HTTPError, ConnectTimeout,
-                ConnectionError, socket.error, ReadTimeout) as exc:
+        except Exception as exc:
             msg = f'error downloading file {file_path}, exception raised: {exc}'
             log.error(msg)
             if verbose:
